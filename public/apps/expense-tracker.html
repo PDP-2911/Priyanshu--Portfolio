@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f5f4f0; --surface:#fff; --surface2:#f0efe9; --border:#e2e0d8;
+    --text:#1a1916; --text2:#6b6860; --text3:#9e9c96;
+    --green:#1a6b3c; --green-bg:#e8f5ee; --green-border:#b8ddc8;
+    --red:#8b1a1a; --red-bg:#fceaea; --red-border:#e8b8b8;
+    --blue:#1a3d6b; --blue-bg:#e8eef5; --blue-border:#b8cde0;
+    --amber:#6b4a1a; --amber-bg:#f5ede8; --amber-border:#ddc8b8;
+    --cyan:#006b6b; --cyan-bg:#e8f5f5;
+    --radius:10px; --radius-sm:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .container{max-width:860px;margin:0 auto;padding:24px 16px 60px;}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.5px;}
+  .subtitle{font-size:13px;color:var(--text2);margin-top:4px;margin-bottom:28px;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:28px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .card-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  .card-val{font-size:22px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
+  .card.income .card-label,.card.income .card-val{color:var(--green);}
+  .card.expense .card-label,.card.expense .card-val{color:var(--red);}
+  .card.balance .card-label,.card.balance .card-val{color:var(--blue);}
+  .card.count .card-label,.card.count .card-val{color:var(--amber);}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
+  .panel-title{font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .fg3{grid-template-columns:1fr 1fr 1fr;}
+  @media(max-width:520px){.fg,.fg3{grid-template-columns:1fr;}}
+  label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:4px;}
+  input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;}
+  input:focus,select:focus{border-color:var(--cyan);}
+  .btn-add{padding:10px 18px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;background:var(--text);color:#fff;width:100%;margin-top:4px;transition:opacity .15s;}
+  .btn-add:hover{opacity:.85;}
+  .saved-note{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px;margin-bottom:16px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
+  .dl-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end;}
+  .dl-dates{flex:1;min-width:220px;}
+  .dl-dates label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:4px;}
+  .dl-dates .date-range{display:flex;gap:8px;align-items:center;}
+  .dl-dates .date-range span{color:var(--text2);font-size:13px;white-space:nowrap;}
+  .btn-pdf{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);padding:10px 20px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s;}
+  .btn-pdf:hover{background:var(--green-border);}
+  .table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
+  thead{background:#006b6b;}
+  thead th{padding:10px 12px;text-align:left;color:#fff;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  tbody tr:nth-child(even){background:var(--surface2);}
+  tbody tr:hover{background:var(--cyan-bg);}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  .td-inc{color:var(--green);font-weight:500;font-family:'DM Mono',monospace;}
+  .td-exp{color:var(--red);font-weight:500;font-family:'DM Mono',monospace;}
+  .td-bal{font-weight:500;font-family:'DM Mono',monospace;}
+  .td-pos{color:var(--blue);}
+  .td-neg{color:var(--red);}
+  .cat-pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
+  .del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:2px 4px;transition:color .15s;}
+  .del-btn:hover{color:var(--red);}
+  .tot-row td{background:#006b6b !important;color:#fff !important;font-weight:600;font-family:'DM Mono',monospace;font-size:13px;border-bottom:none !important;}
+  .empty-row td{text-align:center;padding:32px;color:var(--text3);font-size:13px;}
+
+  /* ── PDF PRINT STYLES ── */
+  #pdf-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;}
+  #pdf-overlay.show{display:flex;}
+  #pdf-box{background:#fff;border-radius:12px;padding:28px 32px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto;position:relative;}
+  #pdf-box h2{font-size:20px;font-weight:600;margin-bottom:4px;}
+  #pdf-box .pdf-sub{font-size:13px;color:var(--text2);margin-bottom:20px;}
+  #pdf-box .pdf-stats{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;}
+  #pdf-box .ps{text-align:center;}
+  #pdf-box .ps-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);font-weight:500;}
+  #pdf-box .ps-val{font-size:18px;font-weight:600;font-family:'DM Mono',monospace;margin-top:2px;}
+  #pdf-box table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  #pdf-box thead{background:#006b6b;}
+  #pdf-box thead th{padding:9px 11px;text-align:left;color:#fff;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+  #pdf-box tbody tr:nth-child(even){background:#f5f9f5;}
+  #pdf-box tbody td{padding:8px 11px;border-bottom:1px solid #e8e8e0;font-size:12.5px;}
+  #pdf-box .pt-inc{color:#1a6b3c;font-weight:500;font-family:'DM Mono',monospace;}
+  #pdf-box .pt-exp{color:#8b1a1a;font-weight:500;font-family:'DM Mono',monospace;}
+  #pdf-box .pt-bal{font-weight:500;font-family:'DM Mono',monospace;color:#1a3d6b;}
+  #pdf-box .pt-baln{font-weight:500;font-family:'DM Mono',monospace;color:#8b1a1a;}
+  #pdf-box .pt-tot td{background:#006b6b !important;color:#fff !important;font-weight:600;font-family:'DM Mono',monospace;}
+  #pdf-box .pt-cat{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;background:#f0efe9;border:1px solid #e2e0d8;color:#6b6860;}
+  .pdf-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+  .pdf-actions button{padding:9px 20px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;}
+  .btn-print{background:#1a1916;color:#fff;}
+  .btn-close-pdf{background:#f0efe9;color:#6b6860;border:1px solid #e2e0d8 !important;}
+  .pdf-footer{font-size:11px;color:#9e9c96;margin-top:16px;border-top:1px solid #e8e8e0;padding-top:10px;}
+
+  @media print {
+    body > .container { display: none; }
+    #pdf-overlay { display:block !important; position:static; background:none; }
+    #pdf-box { box-shadow:none; border-radius:0; max-height:none; padding:0; }
+    .pdf-actions, #close-pdf-btn { display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Expense Tracker</h1>
+  <p class="subtitle">Your data is saved locally on this device only</p>
+
+  <div class="cards">
+    <div class="card income"><div class="card-label">Income</div><div class="card-val" id="s-income">$0.00</div></div>
+    <div class="card expense"><div class="card-label">Expenses</div><div class="card-val" id="s-expense">$0.00</div></div>
+    <div class="card balance"><div class="card-label">Balance</div><div class="card-val" id="s-balance">$0.00</div></div>
+    <div class="card count"><div class="card-label">Entries</div><div class="card-val" id="s-count">0</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Add transaction</div>
+    <div class="fg">
+      <div><label>Description</label><input type="text" id="tx-desc" placeholder="e.g. Costco"></div>
+      <div><label>Amount ($)</label><input type="number" id="tx-amt" placeholder="0.00" min="0" step="0.01"></div>
+    </div>
+    <div class="fg fg3">
+      <div>
+        <label>Type</label>
+        <select id="tx-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="tx-cat">
+          <option>Food</option><option>Transport</option><option>Housing</option>
+          <option>Shopping</option><option>Entertainment</option><option>Health</option>
+          <option>Utilities</option><option>Transfer</option><option>Tax</option><option>Other</option>
+        </select>
+      </div>
+      <div><label>Date</label><input type="date" id="tx-date"></div>
+    </div>
+    <div class="fg" style="margin-bottom:0">
+      <div><label>Notes (optional)</label><input type="text" id="tx-notes" placeholder="e.g. paid by card"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn-add" onclick="addTx()">+ Add transaction</button></div>
+    </div>
+  </div>
+
+  <div class="saved-note"><span class="dot"></span> Data saved locally on this device</div>
+
+  <div class="dl-row">
+    <div class="dl-dates">
+      <label>Report date range</label>
+      <div class="date-range">
+        <input type="date" id="dl-from">
+        <span>to</span>
+        <input type="date" id="dl-to">
+      </div>
+    </div>
+    <button class="btn-pdf" onclick="openPDF()">⬇ Export as PDF</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Balance</th><th></th></tr>
+      </thead>
+      <tbody id="tx-body">
+        <tr class="empty-row"><td colspan="7">No transactions yet — add one above</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PDF Preview Overlay -->
+<div id="pdf-overlay">
+  <div id="pdf-box">
+    <h2 id="pdf-title">Expense Report</h2>
+    <div class="pdf-sub" id="pdf-sub"></div>
+    <div class="pdf-stats" id="pdf-stats"></div>
+    <table id="pdf-table">
+      <thead><tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th>Notes</th><th>Amount</th><th>Balance</th></tr></thead>
+      <tbody id="pdf-body"></tbody>
+    </table>
+    <div class="pdf-footer" id="pdf-footer"></div>
+    <div class="pdf-actions">
+      <button class="btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn-close-pdf" id="close-pdf-btn" onclick="closePDF()">✕ Close preview</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let txs = JSON.parse(localStorage.getItem('expense_txs') || '[]');
+  const todayVal = () => new Date().toISOString().slice(0,10);
+  const fmt = n => '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const now = new Date();
+  document.getElementById('tx-date').value = todayVal();
+  document.getElementById('dl-from').value = new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
+  document.getElementById('dl-to').value = todayVal();
+
+  function save(){ localStorage.setItem('expense_txs', JSON.stringify(txs)); }
+
+  function addTx(){
+    const desc = document.getElementById('tx-desc').value.trim();
+    const amt  = parseFloat(document.getElementById('tx-amt').value);
+    const type = document.getElementById('tx-type').value;
+    const cat  = document.getElementById('tx-cat').value;
+    const date = document.getElementById('tx-date').value || todayVal();
+    const notes= document.getElementById('tx-notes').value.trim();
+    if(!desc||isNaN(amt)||amt<=0){alert('Please enter a description and valid amount.');return;}
+    txs.push({id:Date.now(),desc,amt,type,cat,date,notes});
+    document.getElementById('tx-desc').value='';
+    document.getElementById('tx-amt').value='';
+    document.getElementById('tx-notes').value='';
+    save(); render();
+  }
+
+  function deleteTx(id){
+    if(!confirm('Delete this transaction?'))return;
+    txs=txs.filter(t=>t.id!==id); save(); render();
+  }
+
+  function render(){
+    const income  = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amt,0);
+    const expense = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amt,0);
+    const balance = income - expense;
+    document.getElementById('s-income').textContent  = fmt(income);
+    document.getElementById('s-expense').textContent = fmt(expense);
+    document.getElementById('s-count').textContent   = txs.length;
+    const sb = document.getElementById('s-balance');
+    sb.textContent  = (balance<0?'-':'') + fmt(balance);
+    sb.style.color  = balance>=0?'var(--blue)':'var(--red)';
+
+    const tbody = document.getElementById('tx-body');
+    if(!txs.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet — add one above</td></tr>';return;}
+
+    const sorted=[...txs].sort((a,b)=>a.date.localeCompare(b.date));
+    let running=0;
+    tbody.innerHTML = sorted.map((t,i)=>{
+      if(t.type==='income') running+=t.amt; else running-=t.amt;
+      const amtCell = t.type==='expense'
+        ? `<td class="td-exp">−${fmt(t.amt)}</td>`
+        : `<td class="td-inc">+${fmt(t.amt)}</td>`;
+      const bc = running>=0?'td-bal td-pos':'td-bal td-neg';
+      return `<tr>
+        <td style="color:var(--text3);font-size:12px">${i+1}</td>
+        <td style="color:var(--text2);font-size:12px">${t.date}</td>
+        <td style="font-weight:500">${t.desc}${t.notes?`<div style="font-size:11px;color:var(--text3)">${t.notes}</div>`:''}</td>
+        <td><span class="cat-pill">${t.cat}</span></td>
+        ${amtCell}
+        <td class="${bc}">${running<0?'−':''}${fmt(running)}</td>
+        <td><button class="del-btn" onclick="deleteTx(${t.id})">✕</button></td>
+      </tr>`;
+    }).join('') + `<tr class="tot-row">
+      <td colspan="4">Total</td>
+      <td class="td-exp">${fmt(expense)}</td>
+      <td class="${(income-expense)>=0?'td-pos':'td-neg'}">${(income-expense)<0?'−':''}${fmt(income-expense)}</td>
+      <td></td>
+    </tr>`;
+  }
+
+  function openPDF(){
+    const from = document.getElementById('dl-from').value;
+    const to   = document.getElementById('dl-to').value;
+    let filtered = [...txs].sort((a,b)=>a.date.localeCompare(b.date));
+    if(from) filtered=filtered.filter(t=>t.date>=from);
+    if(to)   filtered=filtered.filter(t=>t.date<=to);
+    if(!filtered.length){alert('No transactions in that date range.');return;}
+
+    const income  = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amt,0);
+    const expense = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amt,0);
+    const balance = income - expense;
+
+    // Title & subtitle
+    const dates = filtered.map(t=>t.date).sort();
+    const d0=dates[0], d1=dates[dates.length-1];
+    let periodLabel;
+    if(d0.slice(0,7)===d1.slice(0,7)){
+      const m=new Date(d0+'T00:00:00');
+      periodLabel=m.toLocaleString('default',{month:'long',year:'numeric'});
+    } else {
+      periodLabel=`${d0} → ${d1}`;
+    }
+    document.getElementById('pdf-title').textContent = 'Expense Report';
+    document.getElementById('pdf-sub').textContent   = periodLabel + '  ·  Generated ' + new Date().toLocaleDateString();
+
+    // Summary stats
+    document.getElementById('pdf-stats').innerHTML = `
+      <div class="ps"><div class="ps-label">Income</div><div class="ps-val" style="color:#1a6b3c">+${fmt(income)}</div></div>
+      <div class="ps"><div class="ps-label">Expenses</div><div class="ps-val" style="color:#8b1a1a">−${fmt(expense)}</div></div>
+      <div class="ps"><div class="ps-label">Balance</div><div class="ps-val" style="color:${balance>=0?'#1a3d6b':'#8b1a1a'}">${balance<0?'−':''}${fmt(balance)}</div></div>
+      <div class="ps"><div class="ps-label">Transactions</div><div class="ps-val">${filtered.length}</div></div>`;
+
+    // Table rows
+    let running=0;
+    document.getElementById('pdf-body').innerHTML = filtered.map((t,i)=>{
+      if(t.type==='income') running+=t.amt; else running-=t.amt;
+      const amtCls = t.type==='expense'?'pt-exp':'pt-inc';
+      const amtTxt = t.type==='expense'?`−${fmt(t.amt)}`:`+${fmt(t.amt)}`;
+      const balCls = running>=0?'pt-bal':'pt-baln';
+      return `<tr>
+        <td style="color:#9e9c96;font-size:11px">${i+1}</td>
+        <td style="color:#6b6860;font-size:11.5px">${t.date}</td>
+        <td style="font-weight:500">${t.desc}</td>
+        <td><span class="pt-cat">${t.cat}</span></td>
+        <td style="color:#9e9c96;font-size:11.5px">${t.notes||'—'}</td>
+        <td class="${amtCls}">${amtTxt}</td>
+        <td class="${balCls}">${running<0?'−':''}${fmt(running)}</td>
+      </tr>`;
+    }).join('') + `<tr class="pt-tot">
+      <td colspan="5" style="font-weight:600">Total</td>
+      <td>−${fmt(expense)}</td>
+      <td>${balance<0?'−':''}${fmt(balance)}</td>
+    </tr>`;
+
+    // Spending breakdown by category
+    const cats={};
+    filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.cat]=(cats[t.cat]||0)+t.amt; });
+    const catStr = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`${c}: ${fmt(v)}`).join('  ·  ');
+    document.getElementById('pdf-footer').innerHTML =
+      `<strong>Spending by category:</strong> ${catStr||'—'}`;
+
+    document.getElementById('pdf-overlay').classList.add('show');
+  }
+
+  function closePDF(){
+    document.getElementById('pdf-overlay').classList.remove('show');
+  }
+
+  document.getElementById('pdf-overlay').addEventListener('click', e=>{
+    if(e.target===document.getElementById('pdf-overlay')) closePDF();
+  });
+
+  document.getElementById('tx-desc').addEventListener('keydown',e=>{if(e.key==='Enter')addTx();});
+
+  render();
+</script>
+</body>
+</html>
