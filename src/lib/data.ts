@@ -84,6 +84,7 @@ export const projects = [
     id: "expense-tracker",
     name: "Expense Tracker",
     tag: "Personal Finance",
+    url: "/apps/expense-tracker.html",
     summary:
       "A responsive personal finance application that enables users to record income and expenses, categorize transactions, monitor balances in real time, generate PDF reports, and securely store financial data locally.",
     features: [
@@ -98,6 +99,7 @@ export const projects = [
     id: "schedule-maker",
     name: "Schedule Maker",
     tag: "Productivity",
+    url: "/apps/schedule-maker.html",
     summary:
       "A productivity-focused scheduling application that helps users organize tasks, prioritize work, track deadlines, monitor progress, and export schedules through an intuitive and user-friendly interface.",
     features: [
